@@ -1,4 +1,6 @@
 #!/usr/bin/awk -f
+# Parses bond information from sana-bond and calculates a histogram
+# of triangles that have at least one broken angular bond.
 
 # "(x)" -> "x"
 function unparen(s,   spl) { # spl is local

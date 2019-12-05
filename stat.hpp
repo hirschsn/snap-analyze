@@ -1,11 +1,13 @@
-#ifndef STAT_HPP_INCLUDED_
-#define STAT_HPP_INCLUDED_
+#pragma once
 
 #include <iostream>
 #include <algorithm>
 #include <numeric>
 #include <vector>
 
+/** Stores a running statistic of max, min, average, sum of a scalar varibale.
+ * Used by sana.cpp.
+ */
 template <typename T>
 struct ScalarStatistics {
     T _max = T(0);
@@ -108,5 +110,3 @@ std::ostream& operator<<(std::ostream& os, const Histogram<T>& ss)
 {
     return os << ss.min() << " " << ss.avg() << " " << ss.max();
 }
-
-#endif

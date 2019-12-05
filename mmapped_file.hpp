@@ -1,6 +1,5 @@
 
-#ifndef MMAPPED_FILE_INCLUDED_
-#define MMAPPED_FILE_INCLUDED_
+#pragma once
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -26,6 +25,9 @@ inline size_t filesize(const char *fn)
     return static_cast<size_t>(statbuf.st_size);
 }
 
+/** Provides easy access to an array stored in binary format via a
+ * memory-mapped file.
+ */
 template <typename T>
 struct MFile {
     typedef T value_type;
@@ -93,5 +95,3 @@ struct MFile {
     off_t bytes, offset;
     void *p;
 };
-
-#endif

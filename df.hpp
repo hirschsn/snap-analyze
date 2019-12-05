@@ -1,6 +1,5 @@
 
-#ifndef DF_HPP_INCLUDED_
-#define DF_HPP_INCLUDED_
+#pragma once
 
 #include <array>
 #include <vector>
@@ -28,6 +27,8 @@ Vec3d& operator /=(Vec3d &x, double d)
     return x;
 }
 
+/** Squared distance between two vectors.
+ */
 double dist2(const Vec3d &a, const Vec3d &b)
 {
     double d2 = 0.0;
@@ -38,6 +39,9 @@ double dist2(const Vec3d &a, const Vec3d &b)
     return d2;
 }
 
+/** Normalizes all positions s.t. pos[0] is at HALF_BOX_L in each of the
+ * three spatial dimensions.
+ */
 void normalize_against_fist_pos(std::vector<Vec3d> &pos)
 {
     auto base = pos[0]; // Copy
@@ -50,6 +54,8 @@ void normalize_against_fist_pos(std::vector<Vec3d> &pos)
     }
 }
 
+/** Maximum distance between two vectors of a given set of vectors.
+ */
 double maxdist(const std::vector<Vec3d> &pos)
 {
     double maxdist = 0.0;
@@ -59,6 +65,8 @@ double maxdist(const std::vector<Vec3d> &pos)
     return std::sqrt(maxdist);
 }
 
+/** Calculates the center of mass of a set of positions.
+ */
 Vec3d center_of_mass(const std::vector<Vec3d> &pos)
 {
     Vec3d com = {{0.0, 0.0, 0.0}};
@@ -68,34 +76,10 @@ Vec3d center_of_mass(const std::vector<Vec3d> &pos)
     return com;
 }
 
-//double linregress(const std::vector<double> &x, const std::vector<double> &y)
-//{
-//    auto s_x = std::accumulate(std::begin(x), std::end(x), 0.0);
-//    auto s_y = std::accumulate(std::begin(y), std::end(y), 0.0);
-//
-//    auto s_xx = std::inner_product(std::begin(x), std::end(x), std::begin(x), 0.0);
-//    auto s_xy = std::inner_product(std::begin(x), std::end(x), std::begin(y), 0.0);
-//
-//    auto n = x.size();
-//
-//    return (n * s_xy - s_x * s_y) / (n * s_xx - s_x * s_x);
-//}
-
-//double linregress(const std::vector<double> &x, const std::vector<double> &y)
-//{
-//    ensure(x.size() == y.size());
-//
-//    auto n = x.size();
-//    double s_x = 0.0, s_y = 0.0, s_xx = 0.0, s_xy = 0.0;
-//    for (size_t i = 0; i < n; ++i) {
-//        s_x += x[i];
-//        s_y += y[i];
-//        s_xx += x[i] * x[i];
-//        s_xy += x[i] * y[i];
-//    }
-//    return (n * s_xy - s_x * s_y) / (n *s_xx - s_x * s_x);
-//}
-
+/** Returns the slope of a linear regression.
+ * [first1, last1) is the range of xs.
+ * [first2, first2 + (last1 - first1)) is the range of ys.
+ */
 template <typename T, typename It1, typename It2>
 T linregress(It1 first1, It1 last1, It2 first2)
 {
@@ -122,6 +106,13 @@ void print_vec(const char *s, const std::vector<T>& v)
     std::cout << std::endl;
 }
 
+/** Calculate the Radius of gyration and the fractal dimension of a
+ * single agglomerate.
+ * Radius of gyration if the standard deviation of the particle positions
+ * from the center of mass.
+ * Fractal dimension is the power-law relationship of radius of gyration
+ * to number of particles.
+ */
 std::pair<double, double>
 calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */) {
   normalize_against_fist_pos(pos);
@@ -197,5 +188,3 @@ calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */) {
 
   return std::make_pair(radogs.back(), df_radog);
 }
-
-#endif

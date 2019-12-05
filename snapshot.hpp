@@ -1,5 +1,4 @@
-#ifndef SNAPSHOT_HPP_INCLUDED_
-#define SNAPSHOT_HPP_INCLUDED_
+#pragma once
 
 #include <sys/signal.h>
 #include <vector>
@@ -7,6 +6,8 @@
 #include "mmapped_file.hpp"
 
 
+/** Assert-equivalent that is *not* a no-op if NDEBUG is set.
+ */
 #define ensure(cond)                                                          \
     do {                                                                      \
         if (!(cond)) {                                                        \
@@ -16,6 +17,8 @@
         }                                                                     \
     } while (0)
 
+/** Ensure "pidx" is a valid particle given snapshot "s".
+ */
 #define ensure_valid_p(s, pidx)                                         \
     do                                                                  \
     {                                                                   \
@@ -32,6 +35,10 @@
 typedef int particle_id;
 typedef int bond_id;
 
+/** Holds all data comprising a snapshot and defines accessor functions
+ * to the data.
+ * @see snapshot_iter()
+ */
 struct snapshot {
     MFile<int> pref;
     MFile<int> id;
@@ -76,11 +83,15 @@ struct snapshot {
     }
 };
 
+/** Non-owning interface for access to particles.
+ */
 struct Particle {
     particle_id id;
     const double *pos, *vel;
 };
 
+/** Non-owning interface for access to bonds.
+ */
 struct Bond {
     bond_id bid;
     particle_id pid;
@@ -88,6 +99,13 @@ struct Bond {
     const particle_id *partner_ids;
 };
 
+/** Function to iterate over all particles and bonds of a snapshot.
+ * Use this template to parse a snapshot and provide the according
+ * particle and bond callbacks.
+ * particle callbacks must mave the signature: void(Particle)
+ * bond callbacks must have the signature: void(Bond)
+ * Where Particle and Bond are the struct types defined above.
+ */
 template <typename PCB, typename BCB>
 void snapshot_iter(const snapshot& s, PCB particle_callback, BCB bond_callback)
 {
@@ -127,6 +145,8 @@ void snapshot_iter(const snapshot& s, PCB particle_callback, BCB bond_callback)
 }
 
 
+/** Calculate the distance between two particles given their ids.
+ */
 inline double pdist(const snapshot& s, int pid1, int pid2)
 {
     ensure(pid1 < s.npart() && pid2 < s.npart());
@@ -164,16 +184,17 @@ inline double pdist(const snapshot& s, int pid1, int pid2)
 //    return std::sqrt(pd);
 //}
 
+/** Squared vector norm in 3d
+ */
 inline double vec3len2(const double v[3])
 {
     return v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
 }
 
+/** Calculates the kinetic energy of a particle given its id.
+ */
 inline double kinetic_energy(const snapshot& s, particle_id pid)
 {
     ensure_valid_p(s, pid);
     return .5 * vec3len2(s.vel_of_part(pid));
 }
-
-
-#endif
