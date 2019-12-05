@@ -1,0 +1,18 @@
+
+.SUFFIXES:
+.SUFFIXES: .cpp
+
+CXXFLAGS?=-O3 -march=native -mtune=native
+
+BIN=sana sana-bond df test_df
+OBJ=$(BIN:=.o)
+
+all: $(BIN)
+
+clean:
+	rm -f $(BIN)
+
+.cpp:
+	$(CXX) -std=c++17 $(CXXFLAGS) $< -o $@
+
+.PHONY: all clean
