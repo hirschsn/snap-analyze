@@ -4,7 +4,7 @@
 
 CXXFLAGS?=-O3 -march=native -mtune=native
 
-BIN=sana sana-bond df test_df
+BIN=sana sana-bond df
 OBJ=$(BIN:=.o)
 
 all: $(BIN)
