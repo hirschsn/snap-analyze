@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# For license details see LICENSE.
 
 import sys
 import math

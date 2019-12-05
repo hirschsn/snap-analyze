@@ -1,4 +1,5 @@
-
+// For license details see LICENSE.
+ 
 #include <iostream>
 #include <cmath>
 #include <utility>

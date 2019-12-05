@@ -1,4 +1,6 @@
 #!/usr/bin/awk -f
+# For license details see LICENSE.
+#
 # Parses bond information from sana-bond and calculates a histogram
 # of triangles that have at least one broken angular bond.
 

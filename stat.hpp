@@ -1,3 +1,5 @@
+// For license details see LICENSE.
+
 #pragma once
 
 #include <iostream>

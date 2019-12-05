@@ -1,5 +1,4 @@
-
-
+// For license details see LICENSE.
 //
 // This program calculates the radius of gyration and the fractal dimension
 // of a set of 3d particle positions from standard input.
