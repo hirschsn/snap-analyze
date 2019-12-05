@@ -396,30 +396,14 @@ void print_agglomerate_of_pid(const snapshot& s, const std::vector<std::vector<i
 
 void print_agglomerate_dfs(const snapshot& s, const std::vector<std::vector<int>>& aggs)
 {
-//    ScalarStatistics<double> dfstat, maxdists;
-//
     auto calc_df_radog = [&s](const std::vector<int> &agg){
         return calc_df(ids_to_poss(s, agg));
     };
 
-//#pragma omp parallel for schedule(guided)
-//    for (size_t i = 0; i < aggs.size(); ++i) {
-//        const auto &agg = aggs[i];
-//
-//        if (agg.size() >= 15) {
-//            auto [md, df_radog] = calc_df_radog(agg);
-//#pragma omp critical
-//            {
-//                dfstat.sample(df_radog);
-//                maxdists.sample(md);
-//            }
-//        }
-//    }
     for (const auto &agg: aggs) {
         if (agg.size() < 15)
             continue;
         auto [radog, df_radog] = calc_df_radog(agg);
-        //dfstat.sample(df_radog);
 
         std::cout << agg.size() << " " << radog << " " << df_radog << std::endl;
     }
@@ -478,7 +462,6 @@ double calc_bond_angle(const snapshot& s, const Bond& b)
     constexpr const double PI = 3.141592653589793;
     const double phi0 = b.bid * PI / 180.0;
     constexpr const double TINY_COS_VALUE = 0.9999999999;
-    constexpr const double TINY_SIN_VALUE = 1e-10;
 
     double fac = bend;
 
@@ -488,26 +471,9 @@ double calc_bond_angle(const snapshot& s, const Bond& b)
         cosine = -TINY_COS_VALUE;
     double phi = acos(-cosine);
 
-
     //std::cout << "Bond with bond_id " << b.bid << " and phi0 " << phi0 << " has angle phi = " << phi << std::endl;
 
     return phi - phi0;
-
-    //double sinphi = sin(phi);
-    //if (sinphi < TINY_SIN_VALUE)
-    //    sinphi = TINY_SIN_VALUE;
-    //fac *= (phi - phi0) / sinphi;
-
-    //for (j = 0; j < 3; j++)
-    //{
-    //    double f1 = fac * (cosine * vec1[j] - vec2[j]) * d1i;
-    //    double f2 = fac * (cosine * vec2[j] - vec1[j]) * d2i;
-
-    //    force1[j] = (f1 - f2);
-    //    force2[j] = -f1;
-    //}
-
-    //return 0;
 }
 
 std::optional<BondStore> find_pair_bond(const FullBondStorage& fbs, particle_id pid1, particle_id pid2)

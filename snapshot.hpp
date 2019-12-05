@@ -28,12 +28,6 @@
         ensure(_pidx >= 0 && static_cast<size_t>(_pidx) < (s).npart()); \
     } while (0)
 
-//#if !defined(VERBOSE) || VERBOSE == 0
-//#define verbose_printf(...) ((void) 0)
-//#else
-//#define verbose_printf printf
-//#endif
-
 typedef int particle_id;
 typedef int bond_id;
 
@@ -167,24 +161,6 @@ inline double pdist(const snapshot& s, int pid1, int pid2)
 
     return std::sqrt(pd);
 }
-
-//double pdist1(const snapshot& s, int pidx1, int pid2)
-//{
-//    ensure_valid_p(s, pidx1); ensure_valid_p(s, pid2);
-//
-//    double pd = 0.0;
-//    const auto pos1 = &s.pos[3 * pidx1];
-//    auto pos2 = s.pos_of_part(pid2);
-//
-//    for (int d = 0; d < 3; ++d) {
-//        auto dist = std::fabs(pos2[d] - pos1[d]);
-//        if (dist > HALF_BOX_L)
-//            dist = BOX_L - dist;
-//        pd += dist * dist;
-//    }
-//
-//    return std::sqrt(pd);
-//}
 
 /** Squared vector norm in 3d
  */

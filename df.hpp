@@ -119,9 +119,6 @@ calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */) {
   normalize_against_fist_pos(pos);
   auto com = center_of_mass(pos);
 
-  // std::cout << "Center of mass: " << com[0] << "," << com[1] << "," << com[2]
-  // << std::endl;
-
   std::vector<double> dists(pos.size(), 0.0);
   for (size_t i = 0; i < pos.size(); ++i)
     dists[i] = std::sqrt(dist2(com, pos[i]));
@@ -136,10 +133,6 @@ calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */) {
   int max_dist = dists.back() / sigma;
   // Because of distance to center of mass, dists might not start with "0"
   size_t nsamples = max_dist - min_dist + 1;
-
-  ////
-  //bool output_pos = nsamples > pos.size();
-  ////
 
   std::vector<size_t> ks(nsamples, 0);
   std::vector<double> dks(nsamples);
@@ -182,10 +175,8 @@ calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */) {
   //    std::cout << radogs[i] << " " << ks[i] << " / " << lradogs[i] << " " << dks[i] << std::endl;
   //}
 
-  //std::transform(std::begin(dists), std::end(dists), std::begin(dists), [](double d){return std::log(d);});
   auto df_radog =
       linregress<double>(std::begin(lradogs), std::end(lradogs), std::begin(dks));
-  // auto md = maxdist(pos);
 
   return std::make_pair(radogs.back(), df_radog);
 }
