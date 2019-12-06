@@ -152,13 +152,13 @@ struct BondingStructure {
  * Only used in case of "full bond storage".
  */
 struct BondStore {
-    BondStore(const Bond &b) : bid(b.bid), pid(b.pid), npartners(b.npartners),
+    BondStore(const BondReference &b) : bid(b.bid), pid(b.pid), npartners(b.npartners),
                                partner_ids(b.partner_ids, b.partner_ids + b.npartners)
     {}
 
-    /** Returns the bond as non-owning "Bond" data type.
+    /** Returns the bond as non-owning "BondReference" data type.
      */
-    operator Bond() const {
+    operator BondReference() const {
         return {bid, pid, npartners, partner_ids.data()};
     }
 

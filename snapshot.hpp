@@ -81,14 +81,14 @@ struct snapshot {
 
 /** Non-owning interface for access to particles.
  */
-struct Particle {
+struct ParticleReference {
     particle_id id;
     const double *pos, *vel;
 };
 
 /** Non-owning interface for access to bonds.
  */
-struct Bond {
+struct BondReference {
     bond_id bid;
     particle_id pid;
     int npartners;
@@ -98,9 +98,9 @@ struct Bond {
 /** Function to iterate over all particles and bonds of a snapshot.
  * Use this template to parse a snapshot and provide the according
  * particle and bond callbacks.
- * particle callbacks must mave the signature: void(Particle)
- * bond callbacks must have the signature: void(Bond)
- * Where Particle and Bond are the struct types defined above.
+ * particle callbacks must mave the signature: void(ParticleReference)
+ * bond callbacks must have the signature: void(BondReference)
+ * Where ParticleReference and BondReference are the struct types defined above.
  */
 template <typename PCB, typename BCB>
 void snapshot_iter(const snapshot& s, PCB particle_callback, BCB bond_callback)
@@ -120,7 +120,7 @@ void snapshot_iter(const snapshot& s, PCB particle_callback, BCB bond_callback)
         for (int i = 0; i < nlocalpart; ++i) {
             auto p = pstart + i;
 
-            particle_callback(Particle{s.id[p], &s.pos[3 * p], &s.vel[3 * p]});
+            particle_callback(ParticleReference{s.id[p], &s.pos[3 * p], &s.vel[3 * p]});
 
             auto pb = boff_start + i;
             auto bond_start = glo_off + s.boff[pb];
@@ -129,7 +129,7 @@ void snapshot_iter(const snapshot& s, PCB particle_callback, BCB bond_callback)
                 int bond_num = s.bond[bidx];
                 bidx++;
                 int npartners = s.bond_npartners[bond_num];
-                bond_callback(Bond{bond_num, s.id[p], npartners, &s.bond[bidx]});
+                bond_callback(BondReference{bond_num, s.id[p], npartners, &s.bond[bidx]});
                 bidx += npartners;
             }
         }

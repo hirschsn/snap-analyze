@@ -84,7 +84,7 @@ int main(int argc, char **argv)
     ScalarStatistics<double> ekin;
     std::map<int, size_t> bond_type_hist;
 
-    auto particle_callback = [&flags, &s, &ekin](Particle p){
+    auto particle_callback = [&flags, &s, &ekin](ParticleReference p){
         if (flags[Mode::Print])
             std::printf("Particle %i (pos %lf %lf %lf), bond info:",
                         p.id, p.pos[0], p.pos[1], p.pos[2]);
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
             ekin.sample(kinetic_energy(s, p.id));
     };
 
-    auto bond_callback = [&flags, &s, &bond_len, &bond_type_hist](Bond b){
+    auto bond_callback = [&flags, &s, &bond_len, &bond_type_hist](BondReference b){
         if (flags[Mode::Print]) {
             printf("<Bond npartners=%i particles=",  b.npartners);
             for (int i = 0; i < b.npartners; ++i) {

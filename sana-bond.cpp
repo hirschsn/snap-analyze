@@ -437,7 +437,7 @@ double vlen(T const &v) {
   return std::sqrt(d2);
 }
 
-double calc_bond_angle(const snapshot& s, const Bond& b)
+double calc_bond_angle(const snapshot& s, const BondReference& b)
 {
     auto pos_mid = s.pos_of_part(b.pid);
     auto pos_left = s.pos_of_part(b.partner_ids[0]);
@@ -526,7 +526,7 @@ void check_angle_bonds(const BondingStructure &bs, const snapshot &s, const std:
             for (const auto& b: fbs[pid]) {
                 // Angular bond
                 if (b.npartners == 2) {
-                    auto bb = static_cast<Bond>(b);
+                    auto bb = static_cast<BondReference>(b);
                     auto angle = calc_bond_angle(s, b);
 
                     if (is_broken_angle(angle)) {
@@ -588,7 +588,7 @@ void track_particle(const BondingStructure &bs, const snapshot &s, const std::ve
             for (const auto& b: fbs[pid]) {
                 // Angular bond
                 if (b.npartners == 2) {
-                    auto bb = static_cast<Bond>(b);
+                    auto bb = static_cast<BondReference>(b);
                     auto angle = calc_bond_angle(s, b);
 
                     auto pid1 = bb.partner_ids[0];
@@ -663,7 +663,7 @@ int main(int argc, char **argv)
     }
 
     auto particle_callback = [](auto){};
-    auto bond_callback = [&bs, &s, store_full, &fbs](Bond b){
+    auto bond_callback = [&bs, &s, store_full, &fbs](BondReference b){
         for (int i = 0; i < b.npartners; ++i)
             bs.add_bond(b.pid, b.partner_ids[i], pdist(s, b.pid, b.partner_ids[i]));
         if (b.npartners == 1) {
