@@ -8,16 +8,16 @@
 #include "mmapped_file.hpp"
 
 
+[[noreturn]] void __passert_fail(const char *expr, const char *file, int line, const char *function)
+{
+    std::fprintf(stderr, "p_assert assertion failed: `%s' in %s:%i (%s)", expr, file, line, function);
+    std::abort();
+}
+
 /** Assert-equivalent that is *not* a no-op if NDEBUG is set.
  */
-#define ensure(cond)                                                          \
-    do {                                                                      \
-        if (!(cond)) {                                                        \
-            fprintf(stderr, "Ensure `%s' in %s:%i (%s) failed.\n",            \
-                    #cond, __FILE__, __LINE__, __FUNCTION__);                 \
-            kill(0, SIGINT);                                                  \
-        }                                                                     \
-    } while (0)
+#define p_assert(cond)                                                          \
+    ((cond)? (void) 0: __passert_fail(#cond, __FILE__, __LINE__, __FUNCTION__))
 
 /** Ensure "pidx" is a valid particle given snapshot "s".
  */
@@ -25,7 +25,7 @@
     do                                                                  \
     {                                                                   \
         auto _pidx = pidx;                                              \
-        ensure(_pidx >= 0 && static_cast<size_t>(_pidx) < (s).npart()); \
+        p_assert(_pidx >= 0 && static_cast<size_t>(_pidx) < (s).npart()); \
     } while (0)
 
 typedef int particle_id;
@@ -56,25 +56,25 @@ struct snapshot {
                                                  2 * sizeof(int)), // FIXME: sizeof(unsigned) + sizeof(size_t)
                                                                    // Aktuell verwendetes Espresso schreibe noch unsigned + int raus
                                   ppermut(id.size(), 0) {
-        ensure(3 * npart() == pos.size());
-        ensure(npart() + nproc() == boff.size());
+        p_assert(3 * npart() == pos.size());
+        p_assert(npart() + nproc() == boff.size());
 
         for (size_t i = 0; i < id.size(); ++i) {
             ensure_valid_p(*this, id[i]);
             ppermut[id[i]] = i;
         }
-        ensure(std::count(std::begin(ppermut), std::end(ppermut), 0) == 1);
+        p_assert(std::count(std::begin(ppermut), std::end(ppermut), 0) == 1);
     }
 
     size_t npart() const { return id.size(); }
     size_t nproc() const { return pref.size(); }
 
     const double *pos_of_part(particle_id pid) const {
-        ensure(pid >= 0 && static_cast<size_t>(pid) < npart());
+        p_assert(pid >= 0 && static_cast<size_t>(pid) < npart());
         return &pos[3 * ppermut[pid]];
     }
     const double *vel_of_part(particle_id pid) const {
-        ensure(pid >= 0 && static_cast<size_t>(pid) < npart());
+        p_assert(pid >= 0 && static_cast<size_t>(pid) < npart());
         return &vel[3 * ppermut[pid]];
     }
 };
@@ -137,7 +137,7 @@ void snapshot_iter(const snapshot& s, PCB particle_callback, BCB bond_callback)
     }
 
     // Check if snapshot is complete
-    ensure(static_cast<size_t>(glo_off) == s.bond.size());
+    p_assert(static_cast<size_t>(glo_off) == s.bond.size());
 }
 
 
@@ -145,7 +145,7 @@ void snapshot_iter(const snapshot& s, PCB particle_callback, BCB bond_callback)
  */
 inline double pdist(const snapshot& s, int pid1, int pid2)
 {
-    ensure(pid1 < s.npart() && pid2 < s.npart());
+    p_assert(pid1 < s.npart() && pid2 < s.npart());
 
     double pd = 0.0;
     auto pos1 = s.pos_of_part(pid1);

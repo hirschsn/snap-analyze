@@ -724,7 +724,7 @@ int main(int argc, char **argv)
             print_agglomerate_of_size(s, aggs, sz, false, true);
             argi++;
         } else if (arg == "--print-raw") {
-            ensure(store_full);
+            p_assert(store_full);
             auto sz = strtoul(*(argi + 1), nullptr, 10);
             print_agglomerate_raw(s, fbs, aggs, sz);
             argi++;
@@ -743,10 +743,10 @@ int main(int argc, char **argv)
         } else if (arg == "--df") {
             print_agglomerate_dfs(s, aggs);
         } else if (arg == "--check-angle-bonds") {
-            ensure(store_full);
+            p_assert(store_full);
             check_angle_bonds(bs, s, aggs, fbs);
         } else if (arg == "--track-particle") {
-            ensure(store_full);
+            p_assert(store_full);
             auto pid = atoi(*(argi + 1));
             track_particle(bs, s, aggs, fbs, pid);
             argi++;

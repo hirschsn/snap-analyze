@@ -73,7 +73,7 @@ struct UnionFind {
 
     //void ensure_fully_pruned() {
     //    for (size_t i = 0; i < pred.size(); ++i)
-    //        ensure(is_root(i) || is_root(pred[i]));
+    //        p_assert(is_root(i) || is_root(pred[i]));
     //}
 
     //void prune_all() {

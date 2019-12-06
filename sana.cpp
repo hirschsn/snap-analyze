@@ -127,7 +127,7 @@ int main(int argc, char **argv)
     if (flags[Mode::Bondlength])
         std::cout << " BL " << bond_len;
     if (flags[Mode::Ekin]) {
-        ensure(ekin.nsamples() == s.npart());
+        p_assert(ekin.nsamples() == s.npart());
         std::cout << " Ekin " << ekin;
     }
     if (flags[Mode::Bondlength] || flags[Mode::Ekin])
