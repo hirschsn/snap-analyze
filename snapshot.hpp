@@ -31,19 +31,30 @@
 typedef int particle_id;
 typedef int bond_id;
 
+template <typename Arr>
+inline std::vector<int> create_inverse_permutation(const Arr &permut)
+{
+    std::vector<int> inverse(permut.size(), 0);
+    p_assert(permut.size() < std::numeric_limits<int>::max());
+    for (int i = 0; i < static_cast<int>(permut.size()); ++i)
+        inverse[permut[i]] = i;
+    p_assert(std::count(std::begin(inverse), std::end(inverse), 0) == 1);
+    return inverse;
+}
+
 /** Holds all data comprising a snapshot and defines accessor functions
  * to the data.
  * @see snapshot_iter()
  */
 struct snapshot {
-    MFile<int> pref;
-    MFile<int> id;
-    MFile<double> pos, vel;
-    MFile<int> boff, bond;
-    MFile<int> bond_npartners;
+    const MFile<int> pref;
+    const MFile<int> id;
+    const MFile<double> pos, vel;
+    const MFile<int> boff, bond;
+    const MFile<int> bond_npartners;
 
     // Inverse permutation of "id"
-    std::vector<int> ppermut;
+    const std::vector<int> ppermut;
 
     const double box_l;
     const double half_box_l;
@@ -57,17 +68,14 @@ struct snapshot {
                                   bond_npartners((prefix + ".head").c_str(),
                                                  2 * sizeof(int)), // FIXME: sizeof(unsigned) + sizeof(size_t)
                                                                    // Aktuell verwendetes Espresso schreibe noch unsigned + int raus
-                                  ppermut(id.size(), 0),
+                                  ppermut(create_inverse_permutation(id)),
                                   box_l(box_l),
                                   half_box_l(box_l / 2.) {
+        // Some sanity checks for the snapshot
         p_assert(3 * npart() == pos.size());
         p_assert(npart() + nproc() == boff.size());
-
-        for (size_t i = 0; i < id.size(); ++i) {
+        for (size_t i = 0; i < id.size(); ++i)
             ensure_valid_p(*this, id[i]);
-            ppermut[id[i]] = i;
-        }
-        p_assert(std::count(std::begin(ppermut), std::end(ppermut), 0) == 1);
     }
 
     size_t npart() const { return id.size(); }
