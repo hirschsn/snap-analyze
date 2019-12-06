@@ -45,8 +45,10 @@ struct snapshot {
     // Inverse permutation of "id"
     std::vector<int> ppermut;
 
+    const double box_l;
+    const double half_box_l;
 
-    snapshot(std::string prefix): pref((prefix + ".pref").c_str()),
+    snapshot(double box_l, std::string prefix): pref((prefix + ".pref").c_str()),
                                   id((prefix + ".id").c_str()),
                                   pos((prefix + ".pos").c_str()),
                                   vel((prefix + ".vel").c_str()),
@@ -55,7 +57,9 @@ struct snapshot {
                                   bond_npartners((prefix + ".head").c_str(),
                                                  2 * sizeof(int)), // FIXME: sizeof(unsigned) + sizeof(size_t)
                                                                    // Aktuell verwendetes Espresso schreibe noch unsigned + int raus
-                                  ppermut(id.size(), 0) {
+                                  ppermut(id.size(), 0),
+                                  box_l(box_l),
+                                  half_box_l(box_l / 2.) {
         p_assert(3 * npart() == pos.size());
         p_assert(npart() + nproc() == boff.size());
 
@@ -153,8 +157,8 @@ inline double pdist(const snapshot& s, int pid1, int pid2)
 
     for (int d = 0; d < 3; ++d) {
         auto dist = std::fabs(pos2[d] - pos1[d]);
-        if (dist > HALF_BOX_L)
-            dist = BOX_L - dist;
+        if (dist > s.half_box_l)
+            dist = s.box_l - dist;
         pd += dist * dist;
 
     }

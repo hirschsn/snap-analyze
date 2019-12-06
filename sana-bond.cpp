@@ -9,7 +9,6 @@
 #include <numeric>
 #include <string>
 #include <optional>
-#include "box.hpp"
 #include "stat.hpp"
 #include "snapshot.hpp"
 #include "df.hpp"
@@ -397,7 +396,7 @@ void print_agglomerate_of_pid(const snapshot& s, const std::vector<std::vector<i
 void print_agglomerate_dfs(const snapshot& s, const std::vector<std::vector<int>>& aggs)
 {
     auto calc_df_radog = [&s](const std::vector<int> &agg){
-        return calc_df(ids_to_poss(s, agg));
+        return calc_df(ids_to_poss(s, agg), s.box_l);
     };
 
     for (const auto &agg: aggs) {
@@ -416,12 +415,12 @@ double dround(double d)
 }
 
 template <typename T>
-Vec3d get_mi_vector(const T& a, const T& b) {
+Vec3d get_mi_vector(const T& a, const T& b, double box_l, double half_box_l) {
   Vec3d res;
   for (int i = 0; i < 3; i++) {
     res[i] = a[i] - b[i];
-    if (std::fabs(res[i]) > HALF_BOX_L)
-      res[i] -= dround(res[i] / BOX_L) * BOX_L;
+    if (std::fabs(res[i]) > half_box_l)
+      res[i] -= dround(res[i] / box_l) * box_l;
   }
 
   return res;
@@ -444,13 +443,13 @@ double calc_bond_angle(const snapshot& s, const BondReference& b)
     auto pos_right = s.pos_of_part(b.partner_ids[1]);
 
     /* vector from p_left to p_mid */
-    auto vec1 = get_mi_vector(pos_mid, pos_left);
+    auto vec1 = get_mi_vector(pos_mid, pos_left, s.box_l, s.half_box_l);
     auto d1i = 1.0 / vlen(vec1);
     for (int j = 0; j < 3; j++)
         vec1[j] *= d1i;
 
     /* vector from p_mid to p_right */
-    auto vec2 = get_mi_vector(pos_right, pos_mid);
+    auto vec2 = get_mi_vector(pos_right, pos_mid, s.box_l, s.half_box_l);
     auto d2i = 1.0 / vlen(vec2);
     for (int j = 0; j < 3; j++)
         vec2[j] *= d2i;
@@ -651,7 +650,9 @@ int main(int argc, char **argv)
     if (argc < 2)
         eusage(*argv);
     
-    auto s = snapshot{argv[1]};
+    // TODO: Pass via argument
+    const double box_l = 800.;
+    auto s = snapshot{box_l, argv[1]};
     auto bs = BondingStructure{s.npart()};
     auto fbs = FullBondStorage{};
 

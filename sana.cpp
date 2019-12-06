@@ -4,7 +4,6 @@
 #include <iterator>
 #include <iostream>
 #include <cmath>
-#include "box.hpp"
 #include "stat.hpp"
 #include "snapshot.hpp"
 
@@ -71,8 +70,10 @@ int main(int argc, char **argv)
 {
     if (argc < 2)
         eusage(*argv);
+    // TODO: Pass via argument
+    const double box_l = 800.;
 
-    auto s = snapshot{argv[1]};
+    auto s = snapshot{box_l, argv[1]};
     auto flags = parse_argv(argc - 2, argv + 2);
 
     if (flags[Mode::Print])

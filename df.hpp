@@ -10,8 +10,6 @@
 
 #include <iterator>
 
-#include "box.hpp"
-
 typedef std::array<double, 3> Vec3d;
 
 Vec3d& operator +=(Vec3d& a, const Vec3d &b)
@@ -43,14 +41,15 @@ double dist2(const Vec3d &a, const Vec3d &b)
 /** Normalizes all positions s.t. pos[0] is at HALF_BOX_L in each of the
  * three spatial dimensions.
  */
-void normalize_against_fist_pos(std::vector<Vec3d> &pos)
+void normalize_against_fist_pos(std::vector<Vec3d> &pos, double box_l)
 {
+    const auto half_box_l = box_l / 2.;
     auto base = pos[0]; // Copy
     for (auto &p: pos) {
         for (int i = 0; i < 3; ++i) {
-            p[i] = std::fmod(p[i] - (base[i] - HALF_BOX_L), BOX_L); //  Box_l and box_l/2!
+            p[i] = std::fmod(p[i] - (base[i] - half_box_l), box_l); //  Box_l and box_l/2!
             if (p[i] < 0.0)
-                p[i] += BOX_L;
+                p[i] += box_l;
         }
     }
 }
@@ -115,8 +114,9 @@ void print_vec(const char *s, const std::vector<T>& v)
  * to number of particles.
  */
 std::pair<double, double>
-calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */) {
-  normalize_against_fist_pos(pos);
+calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */,
+        double box_l) {
+  normalize_against_fist_pos(pos, box_l);
   auto com = center_of_mass(pos);
 
   std::vector<double> dists(pos.size(), 0.0);
