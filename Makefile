@@ -2,7 +2,7 @@
 .SUFFIXES:
 .SUFFIXES: .cpp
 
-CXXFLAGS?=-O3 -march=native -mtune=native
+CXXFLAGS?=-O3 -march=native -mtune=native -Wall -Wextra
 
 BIN=sana sana-bond df
 OBJ=$(BIN:=.o)

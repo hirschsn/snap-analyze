@@ -149,7 +149,8 @@ void snapshot_iter(const snapshot& s, PCB particle_callback, BCB bond_callback)
  */
 inline double pdist(const snapshot& s, int pid1, int pid2)
 {
-    p_assert(pid1 < s.npart() && pid2 < s.npart());
+    ensure_valid_p(s, pid1);
+    ensure_valid_p(s, pid2);
 
     double pd = 0.0;
     auto pos1 = s.pos_of_part(pid1);

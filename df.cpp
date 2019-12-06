@@ -7,11 +7,8 @@
 #include <iostream>
 #include "df.hpp"
 
-int main(int argc, char **argv)
+int main(void)
 {
-    if (argc != 2)
-        exit(1);
-    
     // TODO: Pass via argument
     const double box_l = 800.;
     

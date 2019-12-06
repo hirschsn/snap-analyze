@@ -12,9 +12,15 @@
 #include <cstdlib>
 #include <stdexcept>
 
-inline void eperror(const char *s)
+[[noreturn]] inline void eperror(const char *s)
 {
     std::perror(s);
+    std::exit(1);
+}
+
+[[noreturn]] inline void eputs(const char *msg)
+{
+    std::fprintf(stderr, "%s\n", msg);
     std::exit(1);
 }
 
@@ -43,9 +49,9 @@ struct MFile {
         bytes = statbuf.st_size;
 
         // File size and offset must match
-        if (bytes < offset) {
+        if (bytes <= offset) {
             close(fd);
-            throw std::runtime_error("Offset > file length.");
+            eputs("Error in requested file mapping: Offset > file length");
         }
 
         // We do not use "offset" as the offset argument to mmap here because

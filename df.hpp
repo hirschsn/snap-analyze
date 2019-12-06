@@ -123,8 +123,6 @@ calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */,
   for (size_t i = 0; i < pos.size(); ++i)
     dists[i] = std::sqrt(dist2(com, pos[i]));
 
-  double radius = 0.0;
-  size_t k = 0;
   static constexpr const double sigma = 1.0;
 
   std::sort(std::begin(dists), std::end(dists));

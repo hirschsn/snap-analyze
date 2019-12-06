@@ -122,10 +122,11 @@ struct BondingStructure {
      * a vector of particle ids.
      */
     std::vector<agglo_type> agglomerates() {
-        std::map<int, int> root_to_idx;
+        std::map<int, size_t> root_to_idx; //< Mapping of UF root node to index in vector "agglomerates"
         std::vector<agglo_type> agglomerates;
 
-        for (int i = 0; i < npart; ++i) {
+        p_assert(npart < std::numeric_limits<int>::max());
+        for (int i = 0; i < static_cast<int>(npart); ++i) {
             auto r = uf.find(i);
             // We skip roots here in order to avoid size 1 clusters
             if (r == i)

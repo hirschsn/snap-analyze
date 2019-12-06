@@ -83,7 +83,7 @@ void print_agglomerate_sizes_with_maxbl(const BondingStructure& bs, const std::v
 {
     for (const auto& agg: aggs) {
         double ml = 0.0;
-        for (int id: agg)
+        for (particle_id id: agg)
             ml = std::max(ml, bs.max_bl_per_part[id]);
         std::cout << agg.size() << " " << ml << std::endl;
     }
@@ -93,7 +93,7 @@ void print_agglomerate_sizes_with_maxangle(const BondingStructure& bs, const std
 {
     for (const auto& agg: aggs) {
         double ma = 0.0;
-        for (int id: agg)
+        for (particle_id id: agg)
             ma = std::max(ma, bs.max_angle_per_part[id]);
         std::cout << agg.size() << " " << ma << std::endl;
     }
@@ -104,7 +104,7 @@ void print_agglomerate_sizes_with_all(const snapshot& s, const BondingStructure&
     for (const auto& agg: aggs) {
         auto pos = ids_to_poss(s, agg);
         double ma = 0.0, ml = 0.0;
-        for (int id: agg) {
+        for (particle_id id: agg) {
             ma = std::max(ma, bs.max_angle_per_part[id]);
             ml = std::max(ml, bs.max_bl_per_part[id]);
         }
@@ -125,7 +125,7 @@ void print_agglomerate_of_size(const snapshot& s, const std::vector<std::vector<
                 pos = ids_to_poss(s, agg);
             if (print_vel)
                 vel = ids_to_vels(s, agg);
-            for (int i = 0; i < agg.size(); ++i) {
+            for (size_t i = 0; i < agg.size(); ++i) {
                 if (print_id)
                     printf("%i ", agg[i]);
                 if (print_pos)
@@ -143,7 +143,6 @@ void print_agglomerate_of_size(const snapshot& s, const std::vector<std::vector<
 
 void print_agglomerate_tcl(const snapshot& s, const std::vector<std::vector<int>>& aggs, size_t size, bool print_pos, bool print_vel)
 {
-    int i = 0;
     for (const auto& agg: aggs) {
         if (agg.size() == size) {
             std::vector<Vec3d> pos, vel;
@@ -152,8 +151,8 @@ void print_agglomerate_tcl(const snapshot& s, const std::vector<std::vector<int>
                 pos = ids_to_poss(s, agg);
             if (print_vel)
                 vel = ids_to_vels(s, agg);
-            for (int i = 0; i < agg.size(); ++i) {
-                printf("\t{%i", i);
+            for (size_t i = 0; i < agg.size(); ++i) {
+                printf("\t{%zu", i);
                 if (print_pos)
                     printf(" %lf %lf %lf", pos[i][0], pos[i][1], pos[i][2]);
                 if (print_vel)
@@ -217,7 +216,7 @@ void print_agglomerates_to_files(const snapshot& s, const BondingStructure& bs, 
         auto fn = std::to_string(agg.size()) + "_POS_" + std::to_string(ii->second);
         FILE *f = fopen(fn.c_str(), "w");
 
-        for (int i = 0; i < agg.size(); ++i) {
+        for (size_t i = 0; i < agg.size(); ++i) {
             fprintf(f, "%lf %lf %lf\n", pos[i][0], pos[i][1], pos[i][2]);
         }
         fclose(f);
@@ -245,7 +244,7 @@ void print_agglomerates_of_sizes(const snapshot& s, const BondingStructure& bs, 
             FILE *fa = fopen(fn_bab.c_str(), "w");
             FILE *fb = fopen(fn_bbb.c_str(), "w");
 
-            for (int i = 0; i < agg.size(); ++i) {
+            for (size_t i = 0; i < agg.size(); ++i) {
                 fprintf(f, "%lf %lf %lf %lf %lf %lf\n", pos[i][0], pos[i][1], pos[i][2], vel[i][0], vel[i][1], vel[i][2]);
 
                 auto bh = bs.max_hbl_per_part[agg[i]] >= 2.0;
@@ -266,11 +265,11 @@ void print_agglomerates_of_sizes(const snapshot& s, const BondingStructure& bs, 
 
 void print_agglomerate_of_size_broken_bonds(const BondingStructure& bs, const snapshot& s, const std::vector<std::vector<int>>& aggs, size_t size)
 {
-    int i = 0;
+    int agg_no = 0;
     for (const auto& agg: aggs) {
         if (agg.size() == size) {
             auto pos = ids_to_poss(s, agg);
-            printf("Agglomerate %i of size %zu\n", i++, size);
+            printf("Agglomerate %i of size %zu\n", agg_no++, size);
             for (size_t i = 0; i < agg.size(); ++i) {
                 if (bs.max_bl_per_part[agg[i]] > 2.0) {
                     printf("%lf %lf %lf\n", pos[i][0], pos[i][1], pos[i][2]);
@@ -282,11 +281,11 @@ void print_agglomerate_of_size_broken_bonds(const BondingStructure& bs, const sn
 
 void print_agglomerate_of_size_broken_angle_bonds(const BondingStructure& bs, const snapshot& s, const std::vector<std::vector<int>>& aggs, size_t size)
 {
-    int i = 0;
+    int agg_no = 0;
     for (const auto& agg: aggs) {
         if (agg.size() == size) {
             auto pos = ids_to_poss(s, agg);
-            printf("Agglomerate %i of size %zu\n", i++, size);
+            printf("Agglomerate %i of size %zu\n", agg_no++, size);
             for (size_t i = 0; i < agg.size(); ++i) {
                 if (is_broken_angle(bs.max_angle_per_part[agg[i]])) {
                     printf("%lf %lf %lf\n", pos[i][0], pos[i][1], pos[i][2]);
@@ -302,7 +301,7 @@ void print_broken_angle_bonds_with_positions(const BondingStructure& bs, const s
 
         double ma = 0.0;
         int pid = -1;
-        for (int id: agg) {
+        for (particle_id id: agg) {
             if (bs.max_angle_per_part[id] > ma) {
                 ma = bs.max_angle_per_part[id];
                 pid = id;
@@ -321,7 +320,7 @@ void print_all_broken_bonds(const BondingStructure& bs, const snapshot& s, const
 {
     for (const auto& agg: aggs) {
         double ma = 0.0, ml = 0.0;
-        for (int id: agg) {
+        for (particle_id id: agg) {
             ma = std::max(ma, bs.max_angle_per_part[id]);
             ml = std::max(ml, bs.max_hbl_per_part[id]);
         }
@@ -331,7 +330,7 @@ void print_all_broken_bonds(const BondingStructure& bs, const snapshot& s, const
 
 
         std::vector<int> blp, bap, vint;
-        for (int id: agg) {
+        for (particle_id id: agg) {
             bool bl = bs.max_hbl_per_part[id] >= 2.0;
             bool ba = is_broken_angle(bs.max_angle_per_part[id]);
             if (bl)
@@ -353,7 +352,7 @@ void print_all_broken_bonds_verbose(const BondingStructure& bs, const snapshot& 
 {
     for (const auto& agg: aggs) {
         double ma = 0.0, ml = 0.0;
-        for (int id: agg) {
+        for (particle_id id: agg) {
             ma = std::max(ma, bs.max_angle_per_part[id]);
             ml = std::max(ml, bs.max_hbl_per_part[id]);
         }
@@ -362,13 +361,13 @@ void print_all_broken_bonds_verbose(const BondingStructure& bs, const snapshot& 
             continue;
 
         std::cout << agg.size() << " " << ml << " " << ma << " broken-by-bl:";
-        for (int id: agg) {
+        for (particle_id id: agg) {
             if (bs.max_hbl_per_part[id] >= 2.0)
                 std::cout << " " << id << " (" << bs.max_hbl_per_part[id] << ")";
         }
 
         std::cout << " broken-by-angle:";
-        for (int id: agg) {
+        for (particle_id id: agg) {
             if (is_broken_angle(bs.max_angle_per_part[id]))
                 std::cout << " " << id << " (" << bs.max_angle_per_part[id] << ")";
         }
@@ -457,21 +456,15 @@ double calc_bond_angle(const snapshot& s, const BondReference& b)
     /* scalar product of vec1 and vec2 */
     auto cosine = std::inner_product(std::begin(vec1), std::end(vec1), std::begin(vec2), 0.0);
     
-    constexpr const double bend = 1000.0;
     constexpr const double PI = 3.141592653589793;
     const double phi0 = b.bid * PI / 180.0;
     constexpr const double TINY_COS_VALUE = 0.9999999999;
-
-    double fac = bend;
 
     if (cosine > TINY_COS_VALUE)
         cosine = TINY_COS_VALUE;
     if (cosine < -TINY_COS_VALUE)
         cosine = -TINY_COS_VALUE;
     double phi = acos(-cosine);
-
-    //std::cout << "Bond with bond_id " << b.bid << " and phi0 " << phi0 << " has angle phi = " << phi << std::endl;
-
     return phi - phi0;
 }
 
@@ -521,7 +514,7 @@ std::optional<BondStore> find_angle_bond(const FullBondStorage& fbs, particle_id
 
 void check_angle_bonds(const BondingStructure &bs, const snapshot &s, const std::vector<std::vector<int>> &aggs, const FullBondStorage &fbs) {
     for (const auto& agg: aggs) {
-        for (int pid: agg) {
+        for (particle_id pid: agg) {
             for (const auto& b: fbs[pid]) {
                 // Angular bond
                 if (b.npartners == 2) {
@@ -580,7 +573,7 @@ void check_angle_bonds(const BondingStructure &bs, const snapshot &s, const std:
 }
 void track_particle(const BondingStructure &bs, const snapshot &s, const std::vector<std::vector<int>> &aggs, const FullBondStorage &fbs, int wanted_id) {
     for (const auto& agg: aggs) {
-        for (int pid: agg) {
+        for (particle_id pid: agg) {
             if (pid != wanted_id)
                 continue;
 
