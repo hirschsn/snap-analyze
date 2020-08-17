@@ -9,8 +9,9 @@
 #include <numeric>
 #include <string>
 #include <optional>
-#include "stat.hpp"
+
 #include "snapshot.hpp"
+#include "bonding_structure.hpp"
 #include "df.hpp"
 #include "uf.hpp"
 

@@ -5,20 +5,12 @@
 #include <sys/signal.h>
 #include <vector>
 #include <algorithm>
+
 #include "mmapped_file.hpp"
 #include "span.hpp"
+#include "passert.hpp"
+#include "types.hpp"
 
-
-[[noreturn]] void __passert_fail(const char *expr, const char *file, int line, const char *function)
-{
-    std::fprintf(stderr, "p_assert assertion failed: `%s' in %s:%i (%s)", expr, file, line, function);
-    std::abort();
-}
-
-/** Assert-equivalent that is *not* a no-op if NDEBUG is set.
- */
-#define p_assert(cond)                                                          \
-    ((cond)? (void) 0: __passert_fail(#cond, __FILE__, __LINE__, __FUNCTION__))
 
 /** Ensure "pidx" is a valid particle given snapshot "s".
  */
@@ -28,9 +20,6 @@
         auto _pidx = pidx;                                              \
         p_assert(_pidx >= 0 && static_cast<size_t>(_pidx) < (s).npart()); \
     } while (0)
-
-typedef int particle_id;
-typedef int bond_id;
 
 template <typename Arr>
 inline std::vector<int> create_inverse_permutation(const Arr &permut)
@@ -93,21 +82,6 @@ struct snapshot {
     }
 };
 
-/** Non-owning interface for access to particles.
- */
-struct ParticleReference {
-    particle_id id;
-    const double *pos, *vel;
-};
-
-/** Non-owning interface for access to bonds.
- */
-struct BondReference {
-    bond_id bid;
-    particle_id pid;
-    int npartners;
-    const particle_id *partner_ids;
-};
 
 /** Function to iterate over all particles and bonds of a snapshot.
  * Use this template to parse a snapshot and provide the according
