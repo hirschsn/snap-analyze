@@ -50,9 +50,10 @@ struct snapshot {
           boff((prefix + ".boff").c_str()), bond((prefix + ".bond").c_str()),
           bond_npartners(
               (prefix + ".head").c_str(),
-              2 * sizeof(int)), // FIXME: sizeof(unsigned) + sizeof(size_t)
-                                // Aktuell verwendetes Espresso schreibe noch
-                                // unsigned + int raus
+              2 * sizeof(int)), // FIXME: Für ESPResSo HEAD:
+                                // sizeof(unsigned) + sizeof(size_t)
+                                // Altes ESPResSo schreibt noch
+                                // unsigned + int raus.
           ppermut(create_inverse_permutation(id)) {
         // Some sanity checks for the snapshot
         p_assert(3 * npart() == pos.size());
