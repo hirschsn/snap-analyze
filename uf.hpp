@@ -65,32 +65,12 @@ struct UnionFind {
 struct BondingStructure {
 
     BondingStructure(size_t npart):
-      uf(npart), npart(npart), max_bl_per_part(npart, 0.0),
-      max_hbl_per_part(npart, 0.0), max_angle_per_part(npart, 0.0) {}
+      uf(npart), npart(npart) {}
 
     /** Interface to register bond.
      */
-    void add_bond(int i, int j, double dist) {
+    void add_bond(int i, int j) {
         uf.unionp(i, j);
-        max_bl_per_part[i] = std::max(max_bl_per_part[i], dist);
-        max_bl_per_part[j] = std::max(max_bl_per_part[j], dist);
-    }
-
-    /** Interface to register bond length of a harmonic bond.
-     * If you call this, also call add_bond().
-     */
-    void add_hbond(int i, int j, double dist) {
-        max_hbl_per_part[i] = std::max(max_hbl_per_part[i], dist);
-        max_hbl_per_part[j] = std::max(max_hbl_per_part[j], dist);
-    }
-
-    /** Interface to register angles of an angular bond.
-     * If you call this, also call add_bond().
-     */
-    void add_angle(int i, int j, int k, double angle) {
-        max_angle_per_part[i] = std::max(max_angle_per_part[i], std::fabs(angle));
-        max_angle_per_part[j] = std::max(max_angle_per_part[j], std::fabs(angle));
-        max_angle_per_part[k] = std::max(max_angle_per_part[k], std::fabs(angle));
     }
 
     typedef std::vector<int> agglo_type;
@@ -119,11 +99,6 @@ struct BondingStructure {
 
     UnionFind uf; //< UnionFind to compute the bonding structure
     const size_t npart; //< Number of particles
-
-    /** Maximal bond lengths, maximal harmonic bond lengths and maximal
-     * angle of angle bonds per particle.
-     */
-    std::vector<double> max_bl_per_part, max_hbl_per_part, max_angle_per_part;
 };
 
 /** Parsed representation of a bond for storing it in memory.
@@ -146,4 +121,3 @@ struct BondStore {
     std::vector<particle_id> partner_ids;
 };
 
-typedef std::vector<std::vector<BondStore>> FullBondStorage;
