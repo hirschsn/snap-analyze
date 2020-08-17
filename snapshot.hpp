@@ -36,7 +36,7 @@ inline std::vector<int> create_inverse_permutation(const Arr &permut) {
 struct snapshot {
     const MFile<int> pref;
     const MFile<int> id;
-    const MFile<double> pos, vel;
+    const MFile<double> pos /*, vel */;
     const MFile<int> boff, bond;
     const MFile<int> bond_npartners;
 
@@ -45,7 +45,7 @@ struct snapshot {
 
     snapshot(std::string prefix)
         : pref((prefix + ".pref").c_str()), id((prefix + ".id").c_str()),
-          pos((prefix + ".pos").c_str()), vel((prefix + ".vel").c_str()),
+          pos((prefix + ".pos").c_str()), /* vel((prefix + ".vel").c_str()), */
           boff((prefix + ".boff").c_str()), bond((prefix + ".bond").c_str()),
           bond_npartners(
               (prefix + ".head").c_str(),
@@ -67,10 +67,10 @@ struct snapshot {
         p_assert(pid >= 0 && static_cast<size_t>(pid) < npart());
         return make_span3(&pos[3 * ppermut[pid]]);
     }
-    const span3d vel_of_part(particle_id pid) const {
-        p_assert(pid >= 0 && static_cast<size_t>(pid) < npart());
-        return make_span3(&vel[3 * ppermut[pid]]);
-    }
+    //const span3d vel_of_part(particle_id pid) const {
+    //    p_assert(pid >= 0 && static_cast<size_t>(pid) < npart());
+    //    return make_span3(&vel[3 * ppermut[pid]]);
+    //}
 };
 
 /** Function to iterate over all particles and bonds of a snapshot.
@@ -98,7 +98,7 @@ void snapshot_iter(const snapshot &s, PCB particle_callback,
             auto p = pstart + i;
 
             particle_callback(
-                ParticleReference{s.id[p], &s.pos[3 * p], &s.vel[3 * p]});
+                ParticleReference{s.id[p], &s.pos[3 * p] /*, &s.vel[3 * p] */});
 
             auto pb = boff_start + i;
             auto bond_start = glo_off + s.boff[pb];

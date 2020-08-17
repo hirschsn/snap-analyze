@@ -13,49 +13,38 @@
 #include "snapshot.hpp"
 #include "uf.hpp"
 
-std::vector<span3d> ids_to_poss(const snapshot &s,
-                                const std::vector<particle_id> &agg) {
-    std::vector<span3d> poss;
-    poss.reserve(agg.size());
-    std::transform(agg.begin(), agg.end(), std::back_inserter(poss),
-                   [&](particle_id i) { return s.pos_of_part(i); });
-    return poss;
-}
-
 std::vector<Vec3d> ids_to_poss_copy(const snapshot &s,
-                                    const std::vector<int> &agg) {
+                                    const Agglomerate &agg) {
     std::vector<Vec3d> poss;
     poss.reserve(agg.size());
-    std::transform(agg.begin(), agg.end(), std::back_inserter(poss),
-                   [&](particle_id i) {
-                       const span3d p = s.pos_of_part(i);
-                       return Vec3d{p[0], p[1], p[2]};
-                   });
+    for (const particle_id pid: agg) {
+        const span3d p = s.pos_of_part(pid);
+        poss.emplace_back(Vec3d{p[0], p[1], p[2]});
+    }
     return poss;
 }
 
 void print_agglomerates_to_files(const snapshot &s,
-                                 const std::vector<std::vector<int>> &aggs) {
+                                 const std::vector<Agglomerate> &aggs) {
     std::map<int, int> num;
     for (const auto &agg : aggs) {
         auto [ii, unseen] = num.emplace(agg.size(), 0);
         ii->second++;
-        auto pos = ids_to_poss(s, agg);
         auto fn =
             std::to_string(agg.size()) + "_POS_" + std::to_string(ii->second);
         if (auto f = cfile(fn, "w")) {
-            for (size_t i = 0; i < agg.size(); ++i) {
-                std::fprintf(f, "%lf %lf %lf\n", pos[i][0], pos[i][1],
-                             pos[i][2]);
+            for (const particle_id pid: agg) {
+                const auto pos = s.pos_of_part(pid);
+                std::fprintf(f, "%lf %lf %lf\n", pos[0], pos[1], pos[2]);
             }
         }
     }
 }
 
 void print_agglomerate_dfs(const snapshot &s,
-                           const std::vector<std::vector<int>> &aggs,
+                           const std::vector<Agglomerate> &aggs,
                            double box_l, double sigma) {
-    auto calc_df_radog = [&s, sigma, box_l](const std::vector<int> &agg) {
+    auto calc_df_radog = [&s, sigma, box_l](const Agglomerate &agg) {
         return calc_df(ids_to_poss_copy(s, agg), box_l, sigma);
     };
 
@@ -69,17 +58,17 @@ void print_agglomerate_dfs(const snapshot &s,
 
 void eusage(const char *argv0) {
     std::fprintf(stderr, "Usage: %s [OPTIONS...] SNAP-PREFIX\n", argv0);
-    std::fprintf(stderr, "Options:\n");
-    std::fprintf(stderr,
-                 " --sigma SIGMA | -s SIGMA   Set sigma for Df calculation\n");
-    std::fprintf(
-        stderr,
-        " --box_l BOX | -b BOX       Set box size for Df calculation\n");
-    std::fprintf(stderr, "Modi:\n");
-    std::fprintf(stderr, " --print-all-to-files | -p  Print all agglomerates "
-                         "to files named <NPART>_POS_<IDX>\n");
-    std::fprintf(stderr,
-                 " --df | -d                  Calculate fractal dimensions\n");
+
+    constexpr const char *h =
+        "Options:\n"
+        " --sigma SIGMA | -s SIGMA   Set sigma for Df calculation\n"
+        " --box_l BOX | -b BOX       Set box size for Df calculation\n"
+        "Modi:\n"
+        " --print-all-to-files | -p  Print all agglomerates to files named\n"
+        "                              <NPART>_POS_<IDX>\n"
+        " --df | -d                  Calculate fractal dimensions\n"
+        "";
+    std::fputs(h, stderr);
     std::exit(1);
 }
 

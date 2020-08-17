@@ -11,6 +11,7 @@
 #include "uf.hpp"
 
 /** Class storing relevant information about the bonding structure.
+ * Slim wrapper around UnionFind.
  */
 struct BondingStructure {
 
@@ -20,15 +21,13 @@ struct BondingStructure {
      */
     void add_bond(int i, int j) { uf.unionp(i, j); }
 
-    typedef std::vector<int> agglo_type;
-
     /** Returns a vector containing all agglomerates. An agglomerate is, in
      * turn, a vector of particle ids.
      */
-    std::vector<agglo_type> agglomerates() {
+    std::vector<Agglomerate> agglomerates() {
         std::map<int, size_t> root_to_idx; //< Mapping of UF root node to index
                                            //in vector "agglomerates"
-        std::vector<agglo_type> agglomerates;
+        std::vector<Agglomerate> agglomerates;
 
         p_assert(npart < std::numeric_limits<int>::max());
         for (int i = 0; i < static_cast<int>(npart); ++i) {
@@ -38,7 +37,7 @@ struct BondingStructure {
                 continue;
             auto [ii, unseen] = root_to_idx.emplace(r, agglomerates.size());
             if (unseen)
-                agglomerates.push_back(agglo_type{
+                agglomerates.push_back(Agglomerate{
                     r}); // Add the root here, since we skip it in the loop
 
             agglomerates[ii->second].push_back(i);
