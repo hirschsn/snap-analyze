@@ -13,11 +13,10 @@
 #include "snapshot.hpp"
 #include "uf.hpp"
 
-std::vector<Vec3d> ids_to_poss_copy(const snapshot &s,
-                                    const Agglomerate &agg) {
+std::vector<Vec3d> ids_to_poss_copy(const snapshot &s, const Agglomerate &agg) {
     std::vector<Vec3d> poss;
     poss.reserve(agg.size());
-    for (const particle_id pid: agg) {
+    for (const particle_id pid : agg) {
         const span3d p = s.pos_of_part(pid);
         poss.emplace_back(Vec3d{p[0], p[1], p[2]});
     }
@@ -33,7 +32,7 @@ void print_agglomerates_to_files(const snapshot &s,
         auto fn =
             std::to_string(agg.size()) + "_POS_" + std::to_string(ii->second);
         if (auto f = cfile(fn, "w")) {
-            for (const particle_id pid: agg) {
+            for (const particle_id pid : agg) {
                 const auto pos = s.pos_of_part(pid);
                 std::fprintf(f, "%lf %lf %lf\n", pos[0], pos[1], pos[2]);
             }
@@ -42,8 +41,8 @@ void print_agglomerates_to_files(const snapshot &s,
 }
 
 void print_agglomerate_dfs(const snapshot &s,
-                           const std::vector<Agglomerate> &aggs,
-                           double box_l, double sigma) {
+                           const std::vector<Agglomerate> &aggs, double box_l,
+                           double sigma) {
     auto calc_df_radog = [&s, sigma, box_l](const Agglomerate &agg) {
         return calc_df(ids_to_poss_copy(s, agg), box_l, sigma);
     };

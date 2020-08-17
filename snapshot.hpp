@@ -3,6 +3,7 @@
 #pragma once
 
 #include <algorithm>
+#include <string>
 #include <sys/signal.h>
 #include <vector>
 
@@ -67,7 +68,7 @@ struct snapshot {
         p_assert(pid >= 0 && static_cast<size_t>(pid) < npart());
         return make_span3(&pos[3 * ppermut[pid]]);
     }
-    //const span3d vel_of_part(particle_id pid) const {
+    // const span3d vel_of_part(particle_id pid) const {
     //    p_assert(pid >= 0 && static_cast<size_t>(pid) < npart());
     //    return make_span3(&vel[3 * ppermut[pid]]);
     //}
