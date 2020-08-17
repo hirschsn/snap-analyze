@@ -2,7 +2,9 @@
 
 #include <cmath>
 #include <cstdio>
+#include <getopt.h>
 #include <map>
+#include <optional>
 #include <string>
 
 #include "bonding_structure.hpp"
@@ -51,9 +53,10 @@ void print_agglomerates_to_files(const snapshot &s,
 }
 
 void print_agglomerate_dfs(const snapshot &s,
-                           const std::vector<std::vector<int>> &aggs) {
-    auto calc_df_radog = [&s](const std::vector<int> &agg) {
-        return calc_df(ids_to_poss_copy(s, agg), s.box_l, s.sigma);
+                           const std::vector<std::vector<int>> &aggs,
+                           double box_l, double sigma) {
+    auto calc_df_radog = [&s, sigma, box_l](const std::vector<int> &agg) {
+        return calc_df(ids_to_poss_copy(s, agg), box_l, sigma);
     };
 
     for (const auto &agg : aggs) {
@@ -65,18 +68,84 @@ void print_agglomerate_dfs(const snapshot &s,
 }
 
 void eusage(const char *argv0) {
-    std::fprintf(stderr, "Usage: %s SNAP-PREFIX FUNC\n", argv0);
+    std::fprintf(stderr, "Usage: %s [OPTIONS...] SNAP-PREFIX\n", argv0);
+    std::fprintf(stderr, "Options:\n");
+    std::fprintf(stderr,
+                 " --sigma SIGMA | -s SIGMA   Set sigma for Df calculation\n");
+    std::fprintf(
+        stderr,
+        " --box_l BOX | -b BOX       Set box size for Df calculation\n");
+    std::fprintf(stderr, "Modi:\n");
+    std::fprintf(stderr, " --print-all-to-files | -p  Print all agglomerates "
+                         "to files named <NPART>_POS_<IDX>\n");
+    std::fprintf(stderr,
+                 " --df | -d                  Calculate fractal dimensions\n");
     std::exit(1);
 }
 
-int main(int argc, char **argv) {
-    if (argc < 2)
-        eusage(*argv);
+static const option longopts[] = {
+    {"sigma", required_argument, 0, 's'},
+    {"box_l", required_argument, 0, 'b'},
+    {"print-all-to-files", no_argument, 0, 'p'},
+    {"df", no_argument, 0, 'd'},
+    {0, 0, 0, 0},
+};
 
-    // TODO: Pass via argument
-    const double box_l = 800.;
-    const double sigma = 1.0;
-    auto s = snapshot{box_l, sigma, argv[1]};
+struct {
+    bool dflag = false;
+    bool pflag = false;
+    std::optional<double> sigma;
+    std::optional<double> box_l;
+} cmd_params;
+
+void parse_args(int argc, char **argv) {
+    int optidx;
+    for (int c = 0; c != -1;
+         c = getopt_long(argc, argv, "", longopts, &optidx)) {
+        switch (c) {
+        case 's':
+            if (optarg)
+                cmd_params.sigma = atof(optarg);
+            break;
+        case 'b':
+            if (optarg)
+                cmd_params.box_l = atof(optarg);
+            break;
+        case 'p':
+            cmd_params.pflag = true;
+            break;
+        case 'd':
+            cmd_params.dflag = true;
+            break;
+        case '?':
+            eusage(*argv);
+            break;
+        default:
+            break;
+        }
+    }
+
+    /* Parameter sanity check */
+    if (!cmd_params.pflag && !cmd_params.dflag) {
+        std::fprintf(stderr, "No mode specified.\n");
+        eusage(*argv);
+    }
+
+    if (cmd_params.dflag && (!cmd_params.box_l || !cmd_params.sigma)) {
+        std::fprintf(stderr, "Df calculation requires --sigma and --box_l.\n");
+        eusage(*argv);
+    }
+
+    if (optind != argc - 1) {
+        std::fprintf(stderr, "No snapshot specified.\n");
+        eusage(*argv);
+    }
+}
+
+int main(int argc, char **argv) {
+    parse_args(argc, argv);
+
+    auto s = snapshot{argv[optind]};
     auto bs = BondingStructure{s.npart()};
 
     auto particle_callback = [](auto) {};
@@ -89,16 +158,9 @@ int main(int argc, char **argv) {
 
     auto aggs = bs.agglomerates();
 
-    for (char **argi = argv + 2; argi < argv + argc; ++argi) {
-        auto arg = std::string{*argi};
+    if (cmd_params.pflag)
+        print_agglomerates_to_files(s, aggs);
 
-        if (arg == "--all-to-files") {
-            print_agglomerates_to_files(s, aggs);
-        } else if (arg == "--df") {
-            print_agglomerate_dfs(s, aggs);
-        } else {
-            std::fprintf(stderr, "Unrecognized option: %s\n", *argi);
-            std::exit(1);
-        }
-    };
+    if (cmd_params.dflag)
+        print_agglomerate_dfs(s, aggs, *cmd_params.box_l, *cmd_params.sigma);
 }

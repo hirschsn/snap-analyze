@@ -43,11 +43,7 @@ struct snapshot {
     // Inverse permutation of "id"
     const std::vector<int> ppermut;
 
-    const double box_l;
-    const double half_box_l;
-    const double sigma;
-
-    snapshot(double box_l, double sigma, std::string prefix)
+    snapshot(std::string prefix)
         : pref((prefix + ".pref").c_str()), id((prefix + ".id").c_str()),
           pos((prefix + ".pos").c_str()), vel((prefix + ".vel").c_str()),
           boff((prefix + ".boff").c_str()), bond((prefix + ".bond").c_str()),
@@ -56,9 +52,7 @@ struct snapshot {
               2 * sizeof(int)), // FIXME: sizeof(unsigned) + sizeof(size_t)
                                 // Aktuell verwendetes Espresso schreibe noch
                                 // unsigned + int raus
-          ppermut(create_inverse_permutation(id)), box_l(box_l),
-          half_box_l(box_l / 2.),
-          sigma(sigma) {
+          ppermut(create_inverse_permutation(id)) {
         // Some sanity checks for the snapshot
         p_assert(3 * npart() == pos.size());
         p_assert(npart() + nproc() == boff.size());
