@@ -51,23 +51,3 @@ struct BondingStructure {
     const size_t npart; //< Number of particles
 };
 
-/** Parsed representation of a bond for storing it in memory.
- * Only used in case of "full bond storage".
- */
-struct BondStore {
-    BondStore(const BondReference &b) : bid(b.bid), pid(b.pid), npartners(b.npartners),
-                               partner_ids(b.partner_ids, b.partner_ids + b.npartners)
-    {}
-
-    /** Returns the bond as non-owning "BondReference" data type.
-     */
-    operator BondReference() const {
-        return {bid, pid, npartners, partner_ids.data()};
-    }
-
-    bond_id bid;
-    particle_id pid;
-    int npartners;
-    std::vector<particle_id> partner_ids;
-};
-
