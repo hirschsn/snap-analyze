@@ -42,22 +42,9 @@ struct UnionFind {
     }
 
 
-    // Find with distance
-    //std::pair<int, size_t> findd(int i) {
-    //    size_t dist = 0;
-    //    auto r = findf(i, [&dist](auto){dist++;});
-    //    return std::make_pair(r, dist);
-    //}
-
     void prune(int i, int root) {
         (void) findf(i, [root, this](int j){ pred[j] = root; });
     }
-
-    //int findp(int i) {
-    //    auto r = find(i);
-    //    prune(i, r);
-    //    return r;
-    //}
 
     // Union and prune paths
     void unionp(int i, int j) {
@@ -70,16 +57,6 @@ struct UnionFind {
         pred[rj] = ri;
         prune(j, ri);
     }
-
-    //void ensure_fully_pruned() {
-    //    for (size_t i = 0; i < pred.size(); ++i)
-    //        p_assert(is_root(i) || is_root(pred[i]));
-    //}
-
-    //void prune_all() {
-    //    for (size_t i = 0; i < pred.size(); ++i)
-    //        prune(i, find(i));
-    //}
 };
 
 
