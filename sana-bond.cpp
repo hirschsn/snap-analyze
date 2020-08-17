@@ -11,23 +11,23 @@
 #include "df.hpp"
 #include "uf.hpp"
 
-template <typename Ret>
-std::vector<Ret> __ids_to_poss_impl(const snapshot &s, const std::vector<int> &agg)
+std::vector<span3d> ids_to_poss(const snapshot &s, const std::vector<particle_id> &agg)
 {
-    std::vector<Ret> poss;
+    std::vector<span3d> poss;
     poss.reserve(agg.size());
     std::transform(agg.begin(), agg.end(), std::back_inserter(poss), [&](particle_id i){ return s.pos_of_part(i);});
     return poss;
 }
 
-std::vector<span3d> ids_to_poss(const snapshot &s, const std::vector<particle_id> &agg)
-{
-    return __ids_to_poss_impl<span3d>(s, agg);
-}
-
 std::vector<Vec3d> ids_to_poss_copy(const snapshot &s, const std::vector<int> &agg)
 {
-    return __ids_to_poss_impl<Vec3d>(s, agg);
+    std::vector<Vec3d> poss;
+    poss.reserve(agg.size());
+    std::transform(agg.begin(), agg.end(), std::back_inserter(poss), [&](particle_id i){
+            const span3d p = s.pos_of_part(i);
+            return Vec3d{p[0], p[1], p[2]};
+    });
+    return poss;
 }
 
 void print_agglomerates_to_files(const snapshot& s, const std::vector<std::vector<int>>& aggs)

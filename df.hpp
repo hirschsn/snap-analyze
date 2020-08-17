@@ -11,65 +11,7 @@
 #include <iterator>
 #include "span.hpp"
 
-//typedef std::array<double, 3> Vec3d;
-
-template <typename T, std::size_t N>
-struct Vec {
-    constexpr Vec() { _data.fill(T(0)); }
-    constexpr Vec(const std::array<T, N>& data): _data(data) {}
-    constexpr Vec(const static_span<T, N>& s) {
-        std::copy_n(s.begin(), N, _data.begin());
-    }
-
-    constexpr std::size_t size() const {
-        return N;
-    }
-
-    constexpr const T* data() const {
-        return _data.data();
-    }
-    
-    constexpr T* data() {
-        return _data.data();
-    }
-
-    constexpr const T* begin() const {
-        return _data.begin();
-    }
-
-    constexpr const T* cbegin() const {
-        return _data.cbegin();
-    }
-
-    constexpr T* begin() {
-        return _data.begin();
-    }
-
-    constexpr const T* end() const {
-        return _data.end();
-    }
-
-    constexpr const T* cend() const {
-        return _data.cend();
-    }
-
-    constexpr T* end() {
-        return _data.end();
-    }
-    
-    constexpr const T& operator[](std::size_t i) const {
-        return _data[i];
-    }
-
-    constexpr T& operator[](std::size_t i) {
-        return _data[i];
-    }
-
-private:
-    std::array<T, N> _data;
-};
-
-typedef Vec<double, 3> Vec3d;
+typedef std::array<double, 3> Vec3d;
 
 Vec3d& operator +=(Vec3d& a, const Vec3d &b)
 {
@@ -113,17 +55,6 @@ void normalize_against_fist_pos(std::vector<Vec3d> &pos, double box_l)
     }
 }
 
-/** Maximum distance between two vectors of a given set of vectors.
- */
-double maxdist(const std::vector<span3d> &pos)
-{
-    double maxdist = 0.0;
-    for (size_t i = 0; i < pos.size(); ++i)
-        for (size_t j = i + 1; j < pos.size(); ++j)
-            maxdist = std::max(maxdist, dist2(pos[i], pos[j]));
-    return std::sqrt(maxdist);
-}
-
 /** Calculates the center of mass of a set of positions.
  */
 Vec3d center_of_mass(const std::vector<Vec3d> &pos)
@@ -154,15 +85,6 @@ T linregress(It1 first1, It1 last1, It2 first2)
         n++;
     }
     return (n * s_xy - s_x * s_y) / (n *s_xx - s_x * s_x);
-}
-
-
-template <typename T>
-void print_vec(const char *s, const std::vector<T>& v)
-{
-    std::cout << s << ": ";
-    std::copy(std::begin(v), std::end(v), std::ostream_iterator<T>(std::cout, " "));
-    std::cout << std::endl;
 }
 
 /** Calculate the Radius of gyration and the fractal dimension of a
@@ -214,23 +136,6 @@ calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */,
   }
 
   std::transform(std::begin(radogs), std::end(radogs), std::begin(lradogs), [](double d){return std::log(d);});
-
-  //if (output_pos) {
-  //  print_vec("Ks", ks);
-  //  print_vec("log ks", dks);
-  //  print_vec("logRadogs", lradogs);
-
-  //  std::cout << "Position:" << std::endl;
-  //  for (size_t i = 0; i < pos.size(); ++i) {
-  //    std::cout << pos[i][0] << "," << pos[i][1] << "," << pos[i][2]
-  //              << std::endl; // << "  / original: " << opos[i][0] << "," <<
-  //                            // opos[i][1] << "," << opos[i][2] << std::endl;
-  //  }
-  //}
-
-  //for (size_t i = 0; i < nsamples; ++i) {
-  //    std::cout << radogs[i] << " " << ks[i] << " / " << lradogs[i] << " " << dks[i] << std::endl;
-  //}
 
   auto df_radog =
       linregress<double>(std::begin(lradogs), std::end(lradogs), std::begin(dks));
