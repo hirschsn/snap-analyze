@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <cstdio>
+#include <cstdlib>
+
 [[noreturn]] void __passert_fail(const char *expr, const char *file, int line, const char *function)
 {
     std::fprintf(stderr, "p_assert assertion failed: `%s' in %s:%i (%s)", expr, file, line, function);

@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <map>
-#include <algorithm>
+#include <limits>
 
 #include "passert.hpp"
 #include "uf.hpp"
@@ -25,7 +25,7 @@ struct BondingStructure {
 
     typedef std::vector<int> agglo_type;
 
-    /** Returns a vector containing all agglomerates. An agglonerate is, in turn,
+    /** Returns a vector containing all agglomerates. An agglomerate is, in turn,
      * a vector of particle ids.
      */
     std::vector<agglo_type> agglomerates() {

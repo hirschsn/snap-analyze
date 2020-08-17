@@ -1,24 +1,15 @@
 // For license details see LICENSE.
  
-#include <iostream>
 #include <cmath>
-#include <utility>
 #include <map>
-#include <iterator>
-#include <cmath>
-#include <numeric>
 #include <string>
-#include <optional>
+#include <cstdio>
 
 #include "snapshot.hpp"
+#include "cfile.hpp"
 #include "bonding_structure.hpp"
 #include "df.hpp"
 #include "uf.hpp"
-
-bool is_broken_angle(double angle)
-{
-    return angle <= -.3 || angle >= .3;
-}
 
 template <typename Ret>
 std::vector<Ret> __ids_to_poss_impl(const snapshot &s, const std::vector<int> &agg)
@@ -39,19 +30,6 @@ std::vector<Vec3d> ids_to_poss_copy(const snapshot &s, const std::vector<int> &a
     return __ids_to_poss_impl<Vec3d>(s, agg);
 }
 
-struct cfile {
-    cfile() = delete;
-    cfile(const cfile &) = delete;
-    cfile &operator=(const cfile &) = delete;
-
-    cfile(const std::string &fn, const char *mode): f(fopen(fn.c_str(), mode)) {}
-    ~cfile() { if (f) fclose(f); }
-    operator FILE *() const { return f; }
-    operator bool() const { return f != nullptr; }
-private:
-    FILE *f = nullptr;
-};
-
 void print_agglomerates_to_files(const snapshot& s, const std::vector<std::vector<int>>& aggs)
 {
     std::map<int, int> num;
@@ -62,7 +40,7 @@ void print_agglomerates_to_files(const snapshot& s, const std::vector<std::vecto
         auto fn = std::to_string(agg.size()) + "_POS_" + std::to_string(ii->second);
         if (auto f = cfile(fn.c_str(), "w")) {
             for (size_t i = 0; i < agg.size(); ++i) {
-                fprintf(f, "%lf %lf %lf\n", pos[i][0], pos[i][1], pos[i][2]);
+                std::fprintf(f, "%lf %lf %lf\n", pos[i][0], pos[i][1], pos[i][2]);
             }
         }
     }
@@ -78,8 +56,7 @@ void print_agglomerate_dfs(const snapshot& s, const std::vector<std::vector<int>
         if (agg.size() < 15)
             continue;
         auto [radog, df_radog] = calc_df_radog(agg);
-
-        std::cout << agg.size() << " " << radog << " " << df_radog << std::endl;
+        std::printf("%zu %lf %lf\n", agg.size(), radog, df_radog);
     }
 }
 
