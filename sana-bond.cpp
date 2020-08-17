@@ -19,26 +19,30 @@ bool is_broken_angle(double angle)
     return angle <= -.3 || angle >= .3;
 }
 
-std::vector<Vec3d> ids_to_poss(const snapshot &s, const std::vector<int> &agg)
+template <typename Ret>
+std::vector<Ret> __ids_to_poss_impl(const snapshot &s, const std::vector<int> &agg)
 {
-    std::vector<Vec3d> poss(agg.size());
-
-    for (size_t i = 0; i < agg.size(); ++i) {
-        for (int d = 0; d < 3; ++d)
-            poss[i][d] = s.pos[3 * s.ppermut[agg[i]] + d];
-    }
-
+    std::vector<Ret> poss;
+    poss.reserve(agg.size());
+    std::transform(agg.begin(), agg.end(), std::back_inserter(poss), [&](particle_id i){ return s.pos_of_part(i);});
     return poss;
 }
-std::vector<Vec3d> ids_to_vels(const snapshot &s, const std::vector<int> &agg)
+
+std::vector<span3d> ids_to_poss(const snapshot &s, const std::vector<particle_id> &agg)
 {
-    std::vector<Vec3d> vels(agg.size());
+    return __ids_to_poss_impl<span3d>(s, agg);
+}
 
-    for (size_t i = 0; i < agg.size(); ++i) {
-        for (int d = 0; d < 3; ++d)
-            vels[i][d] = s.vel[3 * s.ppermut[agg[i]] + d];
-    }
+std::vector<Vec3d> ids_to_poss_copy(const snapshot &s, const std::vector<int> &agg)
+{
+    return __ids_to_poss_impl<Vec3d>(s, agg);
+}
 
+std::vector<span3d> ids_to_vels(const snapshot &s, const std::vector<int> &agg)
+{
+    std::vector<span3d> vels;
+    vels.reserve(agg.size());
+    std::transform(agg.begin(), agg.end(), std::back_inserter(vels), [&](particle_id i){ return s.vel_of_part(i);});
     return vels;
 }
 
@@ -119,7 +123,7 @@ void print_agglomerate_of_size(const snapshot& s, const std::vector<std::vector<
     for (const auto& agg: aggs) {
         if (agg.size() == size) {
             printf("Agglomerate %i of size %zu\n", i++, size);
-            std::vector<Vec3d> pos, vel;
+            std::vector<span3d> pos, vel;
 
             if (print_pos)
                 pos = ids_to_poss(s, agg);
@@ -141,11 +145,29 @@ void print_agglomerate_of_size(const snapshot& s, const std::vector<std::vector<
     }
 }
 
+void print_n_largest_agglomerates_positions(const snapshot& s, const std::vector<std::vector<int>>& aggs, size_t n)
+{
+    if (n > aggs.size())
+        n = aggs.size();
+    std::vector<std::vector<int>> largest_aggs;
+    largest_aggs.resize(n);
+    std::partial_sort_copy(std::begin(aggs), std::end(aggs), std::begin(largest_aggs), std::end(largest_aggs), [](const std::vector<int> &a1, const std::vector<int> &a2){ return a1.size() > a2.size(); });
+    for (size_t i = 0; i < n; ++i) {
+        const auto &agg = largest_aggs[i];
+        const auto pos = ids_to_poss(s, agg);
+        printf("=== Agglomerate of size %zu\n", agg.size());
+        for (size_t j = 0; j < agg.size(); ++j) {
+            printf("%lf %lf %lf\n", pos[j][0], pos[j][1], pos[j][2]);
+        }
+    }
+}
+
+
 void print_agglomerate_tcl(const snapshot& s, const std::vector<std::vector<int>>& aggs, size_t size, bool print_pos, bool print_vel)
 {
     for (const auto& agg: aggs) {
         if (agg.size() == size) {
-            std::vector<Vec3d> pos, vel;
+            std::vector<span3d> pos, vel;
 
             if (print_pos)
                 pos = ids_to_poss(s, agg);
@@ -206,6 +228,20 @@ void print_agglomerate_raw(const snapshot& s, const FullBondStorage& fbs, const 
     printf("}\n");
 }
 
+
+struct cfile {
+    cfile() = delete;
+    cfile(const cfile &) = delete;
+    cfile &operator=(const cfile &) = delete;
+
+    cfile(const std::string &fn, const char *mode): f(fopen(fn.c_str(), mode)) {}
+    ~cfile() { if (f) fclose(f); }
+    operator FILE *() const { return f; }
+    operator bool() const { return f != nullptr; }
+private:
+    FILE *f = nullptr;
+};
+
 void print_agglomerates_to_files(const snapshot& s, const BondingStructure& bs, const std::vector<std::vector<int>>& aggs)
 {
     std::map<int, int> num;
@@ -214,12 +250,11 @@ void print_agglomerates_to_files(const snapshot& s, const BondingStructure& bs, 
         ii->second++;
         auto pos = ids_to_poss(s, agg);
         auto fn = std::to_string(agg.size()) + "_POS_" + std::to_string(ii->second);
-        FILE *f = fopen(fn.c_str(), "w");
-
-        for (size_t i = 0; i < agg.size(); ++i) {
-            fprintf(f, "%lf %lf %lf\n", pos[i][0], pos[i][1], pos[i][2]);
+        if (auto f = cfile(fn.c_str(), "w")) {
+            for (size_t i = 0; i < agg.size(); ++i) {
+                fprintf(f, "%lf %lf %lf\n", pos[i][0], pos[i][1], pos[i][2]);
+            }
         }
-        fclose(f);
     }
 }
 
@@ -395,7 +430,7 @@ void print_agglomerate_of_pid(const snapshot& s, const std::vector<std::vector<i
 void print_agglomerate_dfs(const snapshot& s, const std::vector<std::vector<int>>& aggs)
 {
     auto calc_df_radog = [&s](const std::vector<int> &agg){
-        return calc_df(ids_to_poss(s, agg), s.box_l);
+        return calc_df(ids_to_poss_copy(s, agg), s.box_l);
     };
 
     for (const auto &agg: aggs) {
@@ -413,8 +448,7 @@ double dround(double d)
     return std::floor(d + .5);
 }
 
-template <typename T>
-Vec3d get_mi_vector(const T& a, const T& b, double box_l, double half_box_l) {
+Vec3d get_mi_vector(const span3d a, const span3d b, double box_l, double half_box_l) {
   Vec3d res;
   for (int i = 0; i < 3; i++) {
     res[i] = a[i] - b[i];
@@ -426,11 +460,9 @@ Vec3d get_mi_vector(const T& a, const T& b, double box_l, double half_box_l) {
 }
 
 /** calculates the squared length of a vector */
-template <typename T>
-double vlen(T const &v) {
+double vlen(const span3d v) {
   double d2 = 0.0;
-  int i;
-  for (i = 0; i < 3; i++)
+  for (int i = 0; i < 3; i++)
     d2 += v[i] * v[i];
   return std::sqrt(d2);
 }
@@ -713,6 +745,14 @@ int main(int argc, char **argv)
             auto sz = strtoul(*(argi + 1), nullptr, 10);
             print_agglomerate_of_size(s, aggs, sz, true, false);
             argi++;
+        } else if (arg == "--print-pos-largest") {
+            auto n = strtoul(*(argi + 1), nullptr, 10);
+            print_n_largest_agglomerates_positions(s, aggs, n);
+            argi++;
+        //} else if (arg == "--print-all-agglomerates-to-files") {
+        //    auto n = strtoul(*(argi + 1), nullptr, 10);
+        //    print_n_largest_agglomerates_positions(s, aggs, n);
+        //    argi++;
         } else if (arg == "--print-vel") {
             auto sz = strtoul(*(argi + 1), nullptr, 10);
             print_agglomerate_of_size(s, aggs, sz, false, true);

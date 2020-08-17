@@ -9,8 +9,67 @@
 #include <algorithm>
 
 #include <iterator>
+#include "span.hpp"
 
-typedef std::array<double, 3> Vec3d;
+//typedef std::array<double, 3> Vec3d;
+
+template <typename T, std::size_t N>
+struct Vec {
+    constexpr Vec() { _data.fill(T(0)); }
+    constexpr Vec(const std::array<T, N>& data): _data(data) {}
+    constexpr Vec(const static_span<T, N>& s) {
+        std::copy_n(s.begin(), N, _data.begin());
+    }
+
+    constexpr std::size_t size() const {
+        return N;
+    }
+
+    constexpr const T* data() const {
+        return _data.data();
+    }
+    
+    constexpr T* data() {
+        return _data.data();
+    }
+
+    constexpr const T* begin() const {
+        return _data.begin();
+    }
+
+    constexpr const T* cbegin() const {
+        return _data.cbegin();
+    }
+
+    constexpr T* begin() {
+        return _data.begin();
+    }
+
+    constexpr const T* end() const {
+        return _data.end();
+    }
+
+    constexpr const T* cend() const {
+        return _data.cend();
+    }
+
+    constexpr T* end() {
+        return _data.end();
+    }
+    
+    constexpr const T& operator[](std::size_t i) const {
+        return _data[i];
+    }
+
+    constexpr T& operator[](std::size_t i) {
+        return _data[i];
+    }
+
+private:
+    std::array<T, N> _data;
+};
+
+typedef Vec<double, 3> Vec3d;
 
 Vec3d& operator +=(Vec3d& a, const Vec3d &b)
 {
@@ -56,7 +115,7 @@ void normalize_against_fist_pos(std::vector<Vec3d> &pos, double box_l)
 
 /** Maximum distance between two vectors of a given set of vectors.
  */
-double maxdist(const std::vector<Vec3d> &pos)
+double maxdist(const std::vector<span3d> &pos)
 {
     double maxdist = 0.0;
     for (size_t i = 0; i < pos.size(); ++i)

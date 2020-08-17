@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include "mmapped_file.hpp"
+#include "span.hpp"
 
 
 [[noreturn]] void __passert_fail(const char *expr, const char *file, int line, const char *function)
@@ -41,6 +42,7 @@ inline std::vector<int> create_inverse_permutation(const Arr &permut)
     p_assert(std::count(std::begin(inverse), std::end(inverse), 0) == 1);
     return inverse;
 }
+
 
 /** Holds all data comprising a snapshot and defines accessor functions
  * to the data.
@@ -81,13 +83,13 @@ struct snapshot {
     size_t npart() const { return id.size(); }
     size_t nproc() const { return pref.size(); }
 
-    const double *pos_of_part(particle_id pid) const {
+    const span3d pos_of_part(particle_id pid) const {
         p_assert(pid >= 0 && static_cast<size_t>(pid) < npart());
-        return &pos[3 * ppermut[pid]];
+        return make_span3(&pos[3 * ppermut[pid]]);
     }
-    const double *vel_of_part(particle_id pid) const {
+    const span3d vel_of_part(particle_id pid) const {
         p_assert(pid >= 0 && static_cast<size_t>(pid) < npart());
-        return &vel[3 * ppermut[pid]];
+        return make_span3(&vel[3 * ppermut[pid]]);
     }
 };
 
@@ -177,7 +179,7 @@ inline double pdist(const snapshot& s, int pid1, int pid2)
 
 /** Squared vector norm in 3d
  */
-inline double vec3len2(const double v[3])
+inline double vec3len2(const span3d v)
 {
     return v[0] * v[0] + v[1] * v[1] + v[2] * v[2];
 }
