@@ -7,9 +7,7 @@
 #include <cmath>
 #include <numeric>
 #include <algorithm>
-
 #include <iterator>
-#include "span.hpp"
 
 typedef std::array<double, 3> Vec3d;
 
@@ -142,3 +140,4 @@ calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */,
 
   return std::make_pair(radogs.back(), df_radog);
 }
+
