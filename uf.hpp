@@ -10,14 +10,13 @@ struct UnionFind {
     static constexpr const int root_marker = -1;
     std::vector<int> pred;
 
-    UnionFind(size_t npart): pred(npart, root_marker) {}
+    UnionFind(size_t npart) : pred(npart, root_marker) {}
 
-    bool is_root(int i) {
-        return pred[i] == root_marker;
-    }
+    bool is_root(int i) { return pred[i] == root_marker; }
 
     int find(int i) {
-        for (; !is_root(i); i = pred[i]);
+        for (; !is_root(i); i = pred[i])
+            ;
         return i;
     }
 
@@ -28,8 +27,7 @@ struct UnionFind {
     // is allowed to modify pred[j], however, this does
     // not modify the path currently taken (the parent
     // node of j is determined before calling f).
-    template <typename F>
-    int findf(int i, F f) {
+    template <typename F> int findf(int i, F f) {
         for (; !is_root(i);) {
             // f(i) is allowed to change pred[i].
             auto j = pred[i];
@@ -39,9 +37,8 @@ struct UnionFind {
         return i;
     }
 
-
     void prune(int i, int root) {
-        (void) findf(i, [root, this](int j){ pred[j] = root; });
+        (void)findf(i, [root, this](int j) { pred[j] = root; });
     }
 
     // Union and prune paths
@@ -51,9 +48,8 @@ struct UnionFind {
 
         if (ri == rj)
             return;
-        
+
         pred[rj] = ri;
         prune(j, ri);
     }
 };
-

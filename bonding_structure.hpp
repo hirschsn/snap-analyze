@@ -2,34 +2,32 @@
 
 #pragma once
 
-#include <vector>
-#include <map>
 #include <limits>
+#include <map>
+#include <vector>
 
 #include "passert.hpp"
-#include "uf.hpp"
 #include "types.hpp"
+#include "uf.hpp"
 
 /** Class storing relevant information about the bonding structure.
  */
 struct BondingStructure {
 
-    BondingStructure(size_t npart):
-      uf(npart), npart(npart) {}
+    BondingStructure(size_t npart) : uf(npart), npart(npart) {}
 
     /** Interface to register bond.
      */
-    void add_bond(int i, int j) {
-        uf.unionp(i, j);
-    }
+    void add_bond(int i, int j) { uf.unionp(i, j); }
 
     typedef std::vector<int> agglo_type;
 
-    /** Returns a vector containing all agglomerates. An agglomerate is, in turn,
-     * a vector of particle ids.
+    /** Returns a vector containing all agglomerates. An agglomerate is, in
+     * turn, a vector of particle ids.
      */
     std::vector<agglo_type> agglomerates() {
-        std::map<int, size_t> root_to_idx; //< Mapping of UF root node to index in vector "agglomerates"
+        std::map<int, size_t> root_to_idx; //< Mapping of UF root node to index
+                                           //in vector "agglomerates"
         std::vector<agglo_type> agglomerates;
 
         p_assert(npart < std::numeric_limits<int>::max());
@@ -40,14 +38,14 @@ struct BondingStructure {
                 continue;
             auto [ii, unseen] = root_to_idx.emplace(r, agglomerates.size());
             if (unseen)
-                agglomerates.push_back(agglo_type{r}); // Add the root here, since we skip it in the loop
+                agglomerates.push_back(agglo_type{
+                    r}); // Add the root here, since we skip it in the loop
 
             agglomerates[ii->second].push_back(i);
         }
         return agglomerates;
     }
 
-    UnionFind uf; //< UnionFind to compute the bonding structure
+    UnionFind uf;       //< UnionFind to compute the bonding structure
     const size_t npart; //< Number of particles
 };
-

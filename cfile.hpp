@@ -10,11 +10,15 @@ struct cfile {
     cfile(const cfile &) = delete;
     cfile &operator=(const cfile &) = delete;
 
-    cfile(const std::string &fn, const char *mode): f(fopen(fn.c_str(), mode)) {}
-    ~cfile() { if (f) fclose(f); }
+    cfile(const std::string &fn, const char *mode)
+        : f(fopen(fn.c_str(), mode)) {}
+    ~cfile() {
+        if (f)
+            fclose(f);
+    }
     operator FILE *() const { return f; }
     operator bool() const { return f != nullptr; }
-private:
+
+  private:
     FILE *f = nullptr;
 };
-
