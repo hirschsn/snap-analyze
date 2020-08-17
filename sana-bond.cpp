@@ -53,7 +53,7 @@ void print_agglomerates_to_files(const snapshot &s,
 void print_agglomerate_dfs(const snapshot &s,
                            const std::vector<std::vector<int>> &aggs) {
     auto calc_df_radog = [&s](const std::vector<int> &agg) {
-        return calc_df(ids_to_poss_copy(s, agg), s.box_l);
+        return calc_df(ids_to_poss_copy(s, agg), s.box_l, s.sigma);
     };
 
     for (const auto &agg : aggs) {
@@ -75,7 +75,8 @@ int main(int argc, char **argv) {
 
     // TODO: Pass via argument
     const double box_l = 800.;
-    auto s = snapshot{box_l, argv[1]};
+    const double sigma = 1.0;
+    auto s = snapshot{box_l, sigma, argv[1]};
     auto bs = BondingStructure{s.npart()};
 
     auto particle_callback = [](auto) {};

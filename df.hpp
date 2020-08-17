@@ -89,15 +89,13 @@ T linregress(It1 first1, It1 last1, It2 first2) {
  */
 std::pair<double, double>
 calc_df(std::vector<Vec3d> pos /* take a deep copy, we modify it */,
-        double box_l) {
+        double box_l, double sigma) {
     normalize_against_fist_pos(pos, box_l);
     auto com = center_of_mass(pos);
 
     std::vector<double> dists(pos.size(), 0.0);
     for (size_t i = 0; i < pos.size(); ++i)
         dists[i] = std::sqrt(dist2(com, pos[i]));
-
-    static constexpr const double sigma = 1.0;
 
     std::sort(std::begin(dists), std::end(dists));
 
