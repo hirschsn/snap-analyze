@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <cstdio>
 #include <cstdlib>
-#include <stdexcept>
 
 [[noreturn]] inline void eperror(const char *s)
 {
