@@ -33,6 +33,8 @@ Modi:
 
 For large numbers of particles and bonds, have sufficiently RAM available.
 
+Note: The code can be used as is for ESPResSo < v4.0.0. For newer versions, a binary file offset has to be changed. For recent versions of ESPResSo, see the comment in `snapshot.hpp:53ff`.
+
 ## License (ISC)
 
 Copyright 2018-2020 Steffen Hirschmann
