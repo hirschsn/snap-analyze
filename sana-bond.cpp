@@ -7,11 +7,11 @@
 #include <optional>
 #include <string>
 
-#include "bonding_structure.hpp"
-#include "cfile.hpp"
-#include "df.hpp"
-#include "snapshot.hpp"
-#include "uf.hpp"
+#include "util/bonding_structure.hpp"
+#include "util/cfile.hpp"
+#include "util/df.hpp"
+#include "util/snapshot.hpp"
+#include "util/uf.hpp"
 
 std::vector<Vec3d> ids_to_poss_copy(const snapshot &s, const Agglomerate &agg) {
     std::vector<Vec3d> poss;
